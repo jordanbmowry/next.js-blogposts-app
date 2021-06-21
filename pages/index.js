@@ -91,17 +91,45 @@ const Home = (props) => (
 export async function getStaticProps(context) {
 	const parser = new Parser();
 
-	const data = await parser.parseURL('https://flaviocopes.com/index.xml');
+	const Airtable = require('airtable');
+	const base = new Airtable({ apiKey: process.env.APIKEY }).base(
+		'appTGNde63cBwXhZc'
+	);
+
+	const records = await base('Table 1')
+		.select({
+			view: 'Grid view',
+		})
+		.firstPage();
+
+	const feeds = records
+		.filter((record) => {
+			if (record.get('approved') === true) return true;
+		})
+		.map((record) => {
+			return {
+				id: record.id,
+				name: record.get('name'),
+				blogurl: record.get('blogurl'),
+				feedurl: record.get('feedurl'),
+			};
+		});
 
 	const posts = [];
-	data.items.slice(0, 10).forEach((item) => {
-		posts.push({
-			title: item.title,
-			link: item.link,
-			date: item.isoDate,
-			name: 'Flavio Copes',
+
+	for (const feed of feeds) {
+		console.log(feed.feedurl);
+		const data = await parser.parseURL(feed.feedurl);
+
+		data.items.slice(0, 10).forEach((item) => {
+			posts.push({
+				title: item.title,
+				link: item.link,
+				date: item.isoDate,
+				name: feed.name,
+			});
 		});
-	});
+	}
 
 	return {
 		props: {
