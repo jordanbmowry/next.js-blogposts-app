@@ -1,7 +1,39 @@
 import Head from 'next/head';
 import Link from 'next/link';
+import { useState } from 'react';
+import Router from 'next/router';
 
-export default function form() {
+export default function Form() {
+	const [name, setName] = useState('');
+	const [email, setEmail] = useState('');
+	const [blogurl, setBlogurl] = useState('');
+	const [feedurl, setFeedurl] = useState('');
+	const [notes, setNotes] = useState('');
+	const [response, setResponse] = useState('');
+
+	const handleSubmit = async (event) => {
+		event.preventDefault();
+
+		try {
+			const res = await fetch('/api/blog', {
+				method: 'POST',
+				body: JSON.stringify({ name, email, blogurl, feedurl, notes }),
+				headers: { 'Content-Type': 'application/json' },
+			});
+
+			const json = await res.json();
+
+			if (json.success) {
+				alert('Thank you for submitting your blog!');
+				Router.push('/');
+			} else {
+				setResponse(json.message);
+			}
+		} catch (error) {
+			setResponse('An error occured while submitting the form');
+		}
+	};
+
 	return (
 		<div>
 			<Head>
@@ -22,7 +54,7 @@ export default function form() {
 						</div>
 					</div>
 				</header>
-
+				<p className="text-center pb-5">{response}</p>
 				<main>
 					<p className="text-center pb-5"></p>
 
@@ -33,6 +65,7 @@ export default function form() {
 									className="mt-5 md:mt-0 md:col-span-2"
 									action=""
 									method="POST"
+									onSubmit={handleSubmit}
 								>
 									<div className="shadow sm:rounded-md sm:overflow-hidden">
 										<div className="px-4 py-5 bg-white sm:p-6">
@@ -41,6 +74,8 @@ export default function form() {
 											</label>
 											<input
 												required
+												value={name}
+												onChange={(event) => setName(event.target.value)}
 												className="mb-5 mt-1 form-input block w-full py-2 px-3 border border-gray-300 rounded shadow-sm focus:outline-none focus:shadow-outline-blue focus:border-blue-300 transition duration-150 ease-in-out sm:text-sm sm:leading-5"
 											/>
 											<label className="block text-sm font-medium leading-5 text-gray-700">
@@ -49,6 +84,8 @@ export default function form() {
 											<input
 												required
 												type="email"
+												value={email}
+												onChange={(event) => setEmail(event.target.value)}
 												className="mb-5 mt-1 form-input block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:shadow-outline-blue focus:border-blue-300 transition duration-150 ease-in-out sm:text-sm sm:leading-5"
 											/>
 											<label className="block text-sm font-medium leading-5 text-gray-700">
@@ -57,6 +94,8 @@ export default function form() {
 											<input
 												type="url"
 												required
+												value={blogurl}
+												onChange={(event) => setBlogurl(event.target.value)}
 												className="mb-5 mt-1 form-input block w-full py-2 px-3 border border-gray-300 rounded shadow-sm focus:outline-none focus:shadow-outline-blue focus:border-blue-300 transition duration-150 ease-in-out sm:text-sm sm:leading-5"
 												placeholder="https://www.example.com"
 											/>
@@ -66,6 +105,8 @@ export default function form() {
 											<input
 												type="url"
 												required
+												value={blogurl}
+												onChange={(event) => setBlogurl(event.target.value)}
 												className="mb-5 mt-1 form-input block w-full py-2 px-3 border border-gray-300 rounded shadow-sm focus:outline-none focus:shadow-outline-blue focus:border-blue-300 transition duration-150 ease-in-out sm:text-sm sm:leading-5"
 												placeholder="https://www.example.com/feed"
 											/>
@@ -78,6 +119,8 @@ export default function form() {
 											</label>
 											<div className="rounded-md shadow-sm">
 												<textarea
+													value={notes}
+													onChange={(event) => setNotes(event.target.value)}
 													rows="3"
 													className="form-textarea mt-1 block w-full transition duration-150 ease-in-out sm:text-sm sm:leading-5"
 													placeholder="Anything you want to tell us!"
